@@ -3,7 +3,7 @@ R package for analyzing stacked multiple imputations
 
 
 ## Install in R using the following R code:
-devtools::install_github("lbeesleyBIOSTAT/StackImpute")
+devtools::install_github("lbeesleyBIOSTAT/StackImpute", build_vignettes = TRUE)
 
 library(StackImpute)
 
