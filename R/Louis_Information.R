@@ -59,7 +59,7 @@ estfun_mod.glm = function (x, ...)
   if(substr(x$family$family, 1, 17) %in% c("poisson", "binomial", "Negative Binomial")){
     dispersion = 1
   }else{
-    sum(as.vector(residuals(x, "response"))^2 * weights(x, "prior"), na.rm = TRUE)/sum(weights(x, "prior"), na.rm = TRUE)
+    dispersion = sum(as.vector(residuals(x, "response"))^2 * weights(x, "prior"), na.rm = TRUE)/sum(weights(x, "prior"), na.rm = TRUE)
   }
   #rval <- wres * xmat/dispersion
   rval = residuals(x,  "response")  * xmat/dispersion
