@@ -12,4 +12,4 @@ library(StackImpute)
 vignette(package = 'StackImpute')
 
 
-## Created by Dr. Lauren J Beesley, lbeesley@umich.edu,, Postdoctoral Research Fellow, University of Michigan
+Created by Dr. Lauren J Beesley, lbeesley@umich.edu, Postdoctoral Research Fellow, University of Michigan
