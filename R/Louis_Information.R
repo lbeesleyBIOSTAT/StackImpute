@@ -31,7 +31,7 @@ Louis_Information = function(fit, stack, M, IMPUTED){
     A= sandwich::estfun(fit)
     SCORE = sandwich::estfun(fit)/stack$wt
   }
-  SS_mis = matrix(0,ncol = p, nrow = p)
+  SS_mis = matrix(0,ncol = p, nrow = p) 
   for(m in IMPUTED){
     A = matrix(rep(apply(as.matrix(sweep(SCORE[stack$.id==m,], MARGIN = 1, stack[stack$.id==m,'wt'], '*')),2,sum),M), ncol = p, nrow = M, byrow = T)
     SS_mis = SS_mis + t(as.matrix(sweep(as.matrix(SCORE[stack$.id==m,] - A), MARGIN = 1, stack[stack$.id==m,'wt'], '*')))%*%as.matrix(SCORE[stack$.id == m,] - A)
