@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 
 
-In this vignette, we provide a brief introduction to using the R package *StackImpute*. The purpose of this package is to provide resources for performing data analysis in the presence of missing data through analysis of a stacked version of the data. We will not include technical details about this estimation approach and instead focus on implementation. For additional details about the estimation algorithm, we refer the reader to "A stacked approach for chained equations multiple imputation incorporating the substantive model" by Lauren J Beesley and Jeremy M G Taylor in *Biometrics* (2020).
+In this vignette, we provide a brief introduction to using the R package *StackImpute*. The purpose of this package is to provide resources for performing data analysis in the presence of missing data through analysis of a stacked version of the data. We will not include technical details about this estimation approach and instead focus on implementation. For additional details about the estimation algorithm, we refer the reader to Beesley et al. (2020) in *UNDER REVIEW*.
 
 
 
@@ -87,14 +87,6 @@ stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
 fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
 Info = StackImpute::Louis_Information(fit, stack, M = 50, IMPUTED = unique(stack$.id[stack$S==0]))
 VARIANCE = diag(solve(Info))
-
-### Step 4': Variance estimation using custom score and covariance matrices. 
-### Note: For GLMs, care must be taken to estimate dispersion parameter correctly accounting for weighting.
-covariates = as.matrix(cbind(1,stack$X, stack$B))
-score = sweep(covariates,1,stack$Y - covariates %*% matrix(coef(fit)), '*')/StackImpute::glm.weighted.dispersion(fit)
-covariance_weighted = summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit)
-Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, M = 50, IMPUTED = unique(stack$.id[stack$S==0]))
-VARIANCE_custom = diag(solve(Info))
 ```
 
 
