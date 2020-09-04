@@ -1,26 +1,25 @@
 
 
 #' Louis_Information
-#' @description This function takes a dataset with stacked multiple imputations and a glm or coxph fit and estimates corresponding standard errors.
+#' @description This function takes a dataset with stacked multiple imputations and a glm or coxph fit and estimates the corresponding information matrix accounting for the imputation uncertainty.
 #'
 #' @param fit object of class glm or coxph from fitting to the (weighted) stacked dataset
 #' @param stack data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack.
 #' @param M number of multiple imputations
-#' @param IMPUTED vector of subject ids (matching stack$.id) corresponding to subjects with imputed data. One could specify this vector to include all patient ids, but this will result in slower estimation.
 #'
 #' @return Info, estimated information matrix accounting for within and between imputation variation
-#' @details  This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data.
+#' @details  This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data as proposed in Beesley and Taylor (2019) https://arxiv.org/abs/1910.04625.
 #'
 #' @export
 
 
-Louis_Information = function(fit, stack, M, IMPUTED){
+Louis_Information = function(fit, stack, M){
   p = length(as.matrix(coef(fit))[,1])
   if('summary.glm' %in% class(fit) | 'summary.coxph' %in% class(fit)){
     stop('Error: fit object should be of class glm or coxph, not a summary object')
   }
   if('coxph' %in% class(fit)){
-    stop('Note: Cox proportional hazards models should be fit using +cluster(.id) in the model formula')
+    print('Note: coxph models should be fit using +cluster(.id) in the model formula')
   }
   if('glm' %in% class(fit)  ){
     if(substr(fit$family$family, 1, 17) %in% c("poisson", "binomial", "Negative Binomial")) {
@@ -51,22 +50,22 @@ Louis_Information = function(fit, stack, M, IMPUTED){
 
 
 #' Louis_Information_Custom
-#' @description This function takes a dataset with stacked multiple imputations and a score matrix and covariance matrix from stacked and weighted analysis as inputs to estimate corresponding standard errors accounting for the imputation uncertainty.
+#' @description This function takes a dataset with stacked multiple imputations and a score matrix and covariance matrix from stacked and weighted analysis as inputs to estimates the corresponding information matrix accounting for the imputation uncertainty.
 #'
 #' @param score n x p matrix containing the contribution to the outcome model score matrix for each subject (n rows) and each model parameter (p columns).
-#' @param covariance_weighted p x p matrix containing the estimated covariance matrix from fitting the desired model to the stacked and weighted multiple imputations.
+#' @param covariance_weighted p x p matrix containing the estimated covariance matrix from fitting the desired model to the stacked and weighted multiple imputations. Note: For GLM models, use summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit) as the default dispersion parameter will be incorrect.
 #' @param stack data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack.
 #' @param M number of multiple imputations
-#' @param IMPUTED vector of subject ids (matching stack$.id) corresponding to subjects with imputed data. One could specify this vector to include all patient ids, but this will result in slower estimation.
 #'
 #' @return Info, estimated information matrix accounting for within and between imputation variation
-#' @details This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data.
+#' @details This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data as proposed in Beesley and Taylor (2019) https://arxiv.org/abs/1910.04625.
 #'
 #' @export
 
 
-Louis_Information_Custom = function(score, covariance_weighted,stack, M, IMPUTED){
+Louis_Information_Custom = function(score, covariance_weighted,stack, M){
   p = length(score[1,])
+  print('Note: For glm fits, the default output dispersion parameter does not correctly account for weights. Use summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit) to estimate covariance matrix.')
   if(!is.matrix(covariance_weighted) | dim(covariance_weighted)[1] != p){
     stop('Covariance matrix from weighted regression must be provided. Dimension must match number of columns in score')
   }

@@ -18,13 +18,19 @@ knitr::opts_chunk$set(
 
 
 
-In this vignette, we provide a brief introduction to using the R package *StackImpute*. The purpose of this package is to provide resources for performing data analysis in the presence of missing data through analysis of a stacked version of the data. We will not include technical details about this estimation approach and instead focus on implementation. For additional details about the estimation algorithm, we refer the reader to "A stacked approach for chained equations multiple imputation incorporating the substantive model" by Lauren J Beesley and Jeremy M G Taylor in *Biometrics* (2020).
+In this vignette, we provide a brief introduction to using the R package *StackImpute*. The purpose of this package is to provide resources for performing data analysis in the presence of missing data through analysis of a stacked version of the multiply imputed data. We will not include technical details about this estimation approach and instead focus on implementation. For additional details about the estimation algorithm, we refer the reader to "A stacked approach for chained equations multiple imputation incorporating the substantive model" by Lauren J Beesley and Jeremy M G Taylor to appear in *Biometrics* (2020) and currently on arXiv. 
 
+Many researchers have noted that we can do a "good" job estimating regression model parameters by analyzing a stacked version of multiply imputed data. However, estimation of standard errors has proven to be a challenging problem. We provide several estimation strategies and corresponding software for routine estimation as follows:
+
+(1) For glms and coxph model fits, the function *Louis_Information* will estimate the information matrix accounting for imputation uncertainty. 
+
+(2) For more general likelihood-based inference, the function *Louis_Information_Custom* will take user-specified score and covariance matrices from stacked and weighted analysis. For this function, we note that the model-output dispersion parameter for the *glm* function in R is incorrect for stacked multiple imputations and provide a  function to obtain a better estimate of the dispersion parameter.  
+
+(3) Finally, the function *Bootstrap_Variance* implements a bootstrap-based method for estimating the covariance matrix as proposed by Dr. Paul Bernhardt in "A Comparison of Stacked and Pooled Multiple Imputation" at the Joint Statistical Meetings in 2019. 
 
 
 ## Example analysis using standard imputation stacking 
-
-Many researchers have noted that we can do a "good" job estimating regression model parameters by analyzing stack from a stacked version of the imputed data. However, estimation of standard errors has proven to be a challenging problem. We provide an estimation strategy and corresponding software for routine estimation as follows. 
+First, we suppose that we have imputing missing data using usual multiple imputation incorporating both the outcome and covariates into the imputation. Instead of estimating outcome model parameters using Rubin's combining rules, we propose stacking the multiple imputations to create one long dataset. Then, we perform a weighted analysis, where each subject is weighted by 1/M where M is the number of multiple imputations as follows:
 
 ```{r, echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4}
 library(dplyr)
@@ -54,18 +60,31 @@ stack = mice::complete(imputes, action="long", include = FALSE)
 stack$wt = 1
 stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
 
-### Step 4: Estimation
+### Step 4: Point estimation
 fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
-Info = StackImpute::Louis_Information(fit, stack, M = 50, IMPUTED = unique(stack$.id[stack$S==0]))
+
+### Step 5a: Variance estimation option 1 (for glm and coxph models only)
+Info = StackImpute::Louis_Information(fit, stack, M = 50)
 VARIANCE = diag(solve(Info))
+
+### Step 5b: Variance estimation using custom score and covariance matrices (any model with corresponding likelihood)
+covariates = as.matrix(cbind(1,stack$X, stack$B))
+score = sweep(covariates,1,stack$Y - covariates %*% matrix(coef(fit)), '*')/StackImpute::glm.weighted.dispersion(fit)
+covariance_weighted = summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit) 
+Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, M = 50)
+VARIANCE_custom = diag(solve(Info))
+
+### Step 5c: Variance estimation using bootstrap (any model with vcov method)
+weight_function = function(data){return(rep(1/50,length(data[,1])))}
+bootcovar = StackImpute::Bootstrap_Variance(fit, weight_function, stack, M = 50, n_boot = 100)
+VARIANCE_boot = diag(bootcovar)
 ```
 
 
 
 ## Example analysis using modified imputation stacking allowing for compatibility of the imputation and analysis models
 
-In Beesley et al. (2020) in *UNDER REVIEW*, we propose a modification to this data analysis pipeline that involves imputing missing covariates from distributions that do not condition on the outcome of interest and then performing a weighted analysis on the stacked data. In this case, weights are defined proportion to the distribution of the outcome given covariates in the complete case data. We can implement this modified analysis pipeline as follows: 
-
+In Beesley and Taylor (2020) to appear in *Biometrics*, we propose a modification to this data analysis pipeline that involves imputing missing covariates from distributions that do not condition on the outcome of interest and then performing a weighted analysis on the stacked data. In this case, weights are defined proportion to the distribution of the outcome given covariates in the complete case data. We can implement this modified analysis pipeline as follows: 
 
 ```{r, echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4}
 ### Step 1: Impute B|X
@@ -83,25 +102,31 @@ fit_cc = glm(Y ~ X + B, family='gaussian', data= complete_cases)
 stack$wt = dnorm(stack$Y,mean = predict(fit_cc, newdata = stack), sd = sqrt(summary(fit_cc)$dispersion))
 stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
 
-### Step 4: Estimation
+### Step 4: Point estimation
 fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
-Info = StackImpute::Louis_Information(fit, stack, M = 50, IMPUTED = unique(stack$.id[stack$S==0]))
+
+### Step 5a: Variance estimation option 1 (for glm and coxph models only)
+Info = StackImpute::Louis_Information(fit, stack, M = 50)
 VARIANCE = diag(solve(Info))
 
-### Step 4': Variance estimation using custom score and covariance matrices. 
-### Note: For GLMs, care must be taken to estimate dispersion parameter correctly accounting for weighting.
+### Step 5b: Variance estimation using custom score and covariance matrices (any model with corresponding likelihood)
 covariates = as.matrix(cbind(1,stack$X, stack$B))
 score = sweep(covariates,1,stack$Y - covariates %*% matrix(coef(fit)), '*')/StackImpute::glm.weighted.dispersion(fit)
-covariance_weighted = summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit)
-Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, M = 50, IMPUTED = unique(stack$.id[stack$S==0]))
+covariance_weighted = summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit) 
+Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, M = 50)
 VARIANCE_custom = diag(solve(Info))
+
+### Step 5c: Variance estimation using bootstrap (any model with vcov method)
+weight_function = function(data){return(dnorm(data$Y,mean = predict(fit_cc, newdata = data), sd = sqrt(summary(fit_cc)$dispersion))))}
+bootcovar = StackImpute::Bootstrap_Variance(fit, weight_function, stack, M = 50, n_boot = 100)
+VARIANCE_boot = diag(bootcovar)
 ```
 
 
 
 ## A note on stack structure
 
-We can equivalently performed our proposed data analysis using a stacked dataset with M rows for each subject (with M being the number of multiple imputations) or using a stacked dataset in which subjects with fully-observed data only appear once. The advantage of this latter approach is that estimation may be faster and the stacked dataset may be much smaller. We can perform the above analysis using the shorter stack obtained below 
+We can equivalently performed our proposed data analysis using "short" stacked dataset in which subjects with fully-observed data only appear once. The advantage of this approach is that estimation may be faster and the stacked dataset may be much smaller. We can perform the above analysis using the shorter stack obtained below 
 ```{r, echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4}
 ### Step 2: Stack imputed datasets	
 stack = mice::complete(imputes, action="long", include = FALSE)
