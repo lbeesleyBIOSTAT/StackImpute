@@ -117,7 +117,7 @@ Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, 
 VARIANCE_custom = diag(solve(Info))
 
 ### Step 5c: Variance estimation using bootstrap (any model with vcov method)
-weight_function = function(data){return(dnorm(data$Y,mean = predict(fit_cc, newdata = data), sd = sqrt(summary(fit_cc)$dispersion))))}
+weight_function = function(data){return(dnorm(data$Y,mean = predict(fit_cc, newdata = data), sd = sqrt(summary(fit_cc)$dispersion)))}
 bootcovar = StackImpute::Bootstrap_Variance(fit, weight_function, stack, M = 50, n_boot = 100)
 VARIANCE_boot = diag(bootcovar)
 ```
