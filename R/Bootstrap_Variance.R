@@ -5,31 +5,30 @@
 #' @description This function takes a dataset with stacked multiple imputation and a model fit and applies bootstrap to estimate the covariance matrix accounting for imputation uncertainty.
 #'
 #' @param fit object with corresponding vcov method (e.g. glm, coxph, survreg, etc.) from fitting to the (weighted) stacked dataset
-#' @param weight_function this is a user-defined function for calculating the weights (up to proportionality across multiple imputations) for each row of a boostrapped dataset of the same structure as stack. This function should have a single argument corresponding to this bootstrapped dataset.
 #' @param stack data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack. (3) stack$.imp, which indicates the multiply imputed dataset (from 1 to M). This column can be easily output from MICE.
 #' @param M number of multiple imputations
 #'
 #' @return Variance, estimated covariance matrix accounting for within and between imputation variation
-#' @details This function implements the bootstrap-based estimation method for stacked multiple imputations proposed by Dr. Paul Bernhardt in ``A Comparison of Stacked and Pooled Multiple Imputation" at the Joint Statistical Meetings, 2019. 
-#' @export 
+#' @details This function implements the bootstrap-based estimation method for stacked multiple imputations proposed by Dr. Paul Bernhardt in ``A Comparison of Stacked and Pooled Multiple Imputation" at the Joint Statistical Meetings, 2019.
+#' @export
 
 
-Bootstrap_Variance = function(fit,  weight_function, stack, M, n_boot = 100){
+Bootstrap_Variance = function(fit, stack, M, n_boot = 100){
   covariance_weighted = vcov(fit) #note: for glms, this uses the default dispersion parameter, not the correctly weighted one. We account for this in formula.
-  results <- boot::boot(data=cbind(c(1:M)), statistic=StackImpute::func.boot, R=n_boot, weight_function = weight_function)
+  results <- boot::boot(data=cbind(c(1:M)), statistic=StackImpute::func.boot, R=n_boot)
   theta_var = apply(results$t,2,var)
   Variance =M*covariance_weighted + (1+M)*theta_var
   return(Variance)
 }
 
+
 #' @export
 
-func.boot <- function(data, indices, weight_function){
+func.boot <- function(data, indices){
   stack_temp = stack[stack$.imp == indices[1],]
   for(m in 2:length(indices)){
     stack_temp = rbind(stack_temp, stack[stack$.imp == indices[m],])
   }
-  stack_temp$wt = weight_function(stack_temp)
   stack_temp <- stack_temp %>% group_by(.id) %>% mutate(wt = wt / sum(wt))
   stack_temp <- as.data.frame(stack_temp)
   fit_boot <- StackImpute::my_update(fit, . ~ ., data = stack_temp, weights = stack_temp$wt)
@@ -40,7 +39,7 @@ func.boot <- function(data, indices, weight_function){
 #' @export
 
 my_update <- function(mod, formula = NULL, data = NULL, weights = NULL) {
-  ### Author's note: This is a modification of a function provided by Hadley Wickham 
+  ### Author's note: This is a modification of a function provided by Hadley Wickham
   ### on Stack Overflow to handle environment issues with the update function. Thanks, Hadley!!!
   call <- getCall(mod)
   if (is.null(call)) {

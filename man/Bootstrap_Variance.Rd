@@ -4,12 +4,10 @@
 \alias{Bootstrap_Variance}
 \title{Bootstrap_Variance}
 \usage{
-Bootstrap_Variance(fit, weight_function, stack, M, n_boot = 100)
+Bootstrap_Variance(fit, stack, M, n_boot = 100)
 }
 \arguments{
 \item{fit}{object with corresponding vcov method (e.g. glm, coxph, survreg, etc.) from fitting to the (weighted) stacked dataset}
-
-\item{weight_function}{this is a user-defined function for calculating the weights (up to proportionality across multiple imputations) for each row of a boostrapped dataset of the same structure as stack. This function should have a single argument corresponding to this bootstrapped dataset.}
 
 \item{stack}{data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack. (3) stack$.imp, which indicates the multiply imputed dataset (from 1 to M). This column can be easily output from MICE.}
 
