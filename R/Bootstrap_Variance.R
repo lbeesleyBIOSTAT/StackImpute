@@ -16,8 +16,8 @@
 Bootstrap_Variance = function(fit, stack, M, n_boot = 100){
   covariance_weighted = vcov(fit) #note: for glms, this uses the default dispersion parameter, not the correctly weighted one. We account for this in formula.
   results <- boot::boot(data=cbind(c(1:M)), statistic=StackImpute::func.boot, R=n_boot)
-  theta_var = apply(results$t,2,var)
-  Variance =M*covariance_weighted + (1+M)*theta_var
+  theta_var = var(results$t)
+  Variance =M*diag(covariance_weighted) + (1+M)*theta_var
   return(Variance)
 }
 
