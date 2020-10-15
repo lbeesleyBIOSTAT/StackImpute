@@ -65,7 +65,9 @@ Louis_Information = function(fit, stack, M){
 
 Louis_Information_Custom = function(score, covariance_weighted,stack, M){
   p = length(score[1,])
-  print('Note: For glm fits, the default output dispersion parameter does not correctly account for weights. Use summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit) to estimate covariance matrix.')
+  if(!(substr(fit$family$family, 1, 17) %in% c("poisson", "binomial", "Negative Binomial")) {
+  print('Note: For glm fits with dispersion not equal to 1, the default output dispersion parameter does not correctly account for weights. Use summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit) to estimate covariance matrix.')
+  }
   if(!is.matrix(covariance_weighted) | dim(covariance_weighted)[1] != p){
     stop('Covariance matrix from weighted regression must be provided. Dimension must match number of columns in score')
   }
