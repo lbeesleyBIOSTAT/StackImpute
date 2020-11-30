@@ -4,7 +4,7 @@
 \alias{Louis_Information}
 \title{Louis_Information}
 \usage{
-Louis_Information(fit, stack, M)
+Louis_Information(fit, stack, M, IMPUTED = NULL)
 }
 \arguments{
 \item{fit}{object of class glm or coxph from fitting to the (weighted) stacked dataset}
@@ -12,6 +12,8 @@ Louis_Information(fit, stack, M)
 \item{stack}{data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack.}
 
 \item{M}{number of multiple imputations}
+
+\item{IMPUTED}{deprecated parameter, not used in current version}
 }
 \value{
 Info, estimated information matrix accounting for within and between imputation variation
