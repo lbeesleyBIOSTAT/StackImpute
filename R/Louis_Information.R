@@ -13,7 +13,10 @@
 #' @export
 
 
-Louis_Information = function(fit, stack, M){
+Louis_Information = function(fit, stack, M, IMPUTED=NULL){
+  if(!is.null(IMPUTED)){
+    print('IMPUTED argument is deprecated. Not used.')
+  }
   p = length(as.matrix(coef(fit))[,1])
   if('summary.glm' %in% class(fit) | 'summary.coxph' %in% class(fit)){
     stop('Error: fit object should be of class glm or coxph, not a summary object')
