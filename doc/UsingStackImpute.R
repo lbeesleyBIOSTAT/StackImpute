@@ -32,10 +32,23 @@ knitr::opts_chunk$set(
 #  stack$wt = 1
 #  stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
 #  
-#  ### Step 4: Estimation
+#  ### Step 4: Point estimation
 #  fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
-#  Info = StackImpute::Louis_Information(fit, stack, M = 50, IMPUTED = unique(stack$.id[stack$S==0]))
+#  
+#  ### Step 5a: Variance estimation option 1 (for glm and coxph models only)
+#  Info = StackImpute::Louis_Information(fit, stack, M = 50)
 #  VARIANCE = diag(solve(Info))
+#  
+#  ### Step 5b: Variance estimation using custom score and covariance matrices (any model with corresponding likelihood)
+#  covariates = as.matrix(cbind(1,stack$X, stack$B))
+#  score = sweep(covariates,1,stack$Y - covariates %*% matrix(coef(fit)), '*')/StackImpute::glm.weighted.dispersion(fit)
+#  covariance_weighted = summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit)
+#  Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, M = 50)
+#  VARIANCE_custom = diag(solve(Info))
+#  
+#  ### Step 5c: Variance estimation using bootstrap (any model with vcov method)
+#  bootcovar = StackImpute::Bootstrap_Variance(fit, stack, M = 50, n_boot = 100)
+#  VARIANCE_boot = diag(bootcovar)
 
 ## ---- echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4----------------
 #  ### Step 1: Impute B|X
@@ -53,10 +66,23 @@ knitr::opts_chunk$set(
 #  stack$wt = dnorm(stack$Y,mean = predict(fit_cc, newdata = stack), sd = sqrt(summary(fit_cc)$dispersion))
 #  stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
 #  
-#  ### Step 4: Estimation
+#  ### Step 4: Point estimation
 #  fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
-#  Info = StackImpute::Louis_Information(fit, stack, M = 50, IMPUTED = unique(stack$.id[stack$S==0]))
+#  
+#  ### Step 5a: Variance estimation option 1 (for glm and coxph models only)
+#  Info = StackImpute::Louis_Information(fit, stack, M = 50)
 #  VARIANCE = diag(solve(Info))
+#  
+#  ### Step 5b: Variance estimation using custom score and covariance matrices (any model with corresponding likelihood)
+#  covariates = as.matrix(cbind(1,stack$X, stack$B))
+#  score = sweep(covariates,1,stack$Y - covariates %*% matrix(coef(fit)), '*')/StackImpute::glm.weighted.dispersion(fit)
+#  covariance_weighted = summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit)
+#  Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, M = 50)
+#  VARIANCE_custom = diag(solve(Info))
+#  
+#  ### Step 5c: Variance estimation using bootstrap (any model with vcov method)
+#  bootcovar = StackImpute::Bootstrap_Variance(fit, stack, M = 50, n_boot = 100)
+#  VARIANCE_boot = diag(bootcovar)
 
 ## ---- echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4----------------
 #  ### Step 2: Stack imputed datasets	
