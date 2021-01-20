@@ -49,6 +49,11 @@ knitr::opts_chunk$set(
 #  ### Step 5c: Variance estimation using bootstrap (any model with vcov method)
 #  bootcovar = StackImpute::Bootstrap_Variance(fit, stack, M = 50, n_boot = 100)
 #  VARIANCE_boot = diag(bootcovar)
+#  
+#  ### Step 5d: Variance estimation using jackknife (any model with vcov method)
+#  jackcovar = StackImpute::Jackknife_Variance(fit, stack, M = 50)
+#  VARIANCE_jack = diag(jackcovar)
+#  
 
 ## ---- echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4----------------
 #  ### Step 1: Impute B|X
@@ -69,24 +74,40 @@ knitr::opts_chunk$set(
 #  ### Step 4: Point estimation
 #  fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
 #  
-#  ### Step 5a: Variance estimation option 1 (for glm and coxph models only)
-#  Info = StackImpute::Louis_Information(fit, stack, M = 50)
-#  VARIANCE = diag(solve(Info))
-#  
-#  ### Step 5b: Variance estimation using custom score and covariance matrices (any model with corresponding likelihood)
-#  covariates = as.matrix(cbind(1,stack$X, stack$B))
-#  score = sweep(covariates,1,stack$Y - covariates %*% matrix(coef(fit)), '*')/StackImpute::glm.weighted.dispersion(fit)
-#  covariance_weighted = summary(fit)$cov.unscaled*StackImpute::glm.weighted.dispersion(fit)
-#  Info = StackImpute::Louis_Information_Custom(score, covariance_weighted, stack, M = 50)
-#  VARIANCE_custom = diag(solve(Info))
-#  
-#  ### Step 5c: Variance estimation using bootstrap (any model with vcov method)
-#  bootcovar = StackImpute::Bootstrap_Variance(fit, stack, M = 50, n_boot = 100)
-#  VARIANCE_boot = diag(bootcovar)
+#  ### Any one of the above variance estimation strategies can then be applied.
 
 ## ---- echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4----------------
 #  ### Step 2: Stack imputed datasets	
 #  stack = mice::complete(imputes, action="long", include = FALSE)
 #  cc = unique(stack$.id[stack$S == 1])
 #  stack_short = rbind(stack[stack$S==0,], stack[stack$S==1 & !duplicated(stack$.id),])
+
+## ---- echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4----------------
+#  ### Simulate Data
+#  prob_obs = exp(0.5*B + 0.5*Y)/(1+exp(0.5*B + 0.5*Y))
+#  S_mnar = as.numeric(prob_obs > runif(Nobs,0,1))
+#  complete_cases = data.frame(Y, X, B, S=S_mnar)[S_mnar == 1,] #complete case subjects only
+#  observed_data_mnar = data.frame(Y, X, B, S=S_mnar) #data with missingness in B
+#  observed_data_mnar[S_mnar==0,'B'] = NA
+#  
+#  ### Step 1: Impute B|X,Y
+#  imputes_mnar = mice::mice(observed_data_mnar, m=50, method="norm", printFlag=F, maxit = 1)
+#  pred = imputes_mnar$predictorMatrix
+#  pred[pred != 0] = 0
+#  pred["B","X"] = 1
+#  pred["B","Y"] = 1
+#  imputes_mnar = mice::mice(observed_data_mnar, m=50, predictorMatrix=pred, method="norm", printFlag=F)
+#  
+#  ### Step 2: Stack imputed datasetss	
+#  stack = mice::complete(imputes_mnar, action="long", include = FALSE)
+#  
+#  ### Step 3: Obtain weights
+#  phi1_assumed = 0.5
+#  stack$wt = exp(-phi1_assumed*stack$B)
+#  stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
+#  
+#  ### Step 4: Point estimation
+#  fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
+#  
+#  ### Any one of the above variance estimation strategies can then be applied.
 
