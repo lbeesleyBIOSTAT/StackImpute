@@ -7,6 +7,7 @@
 #' @param fit object with corresponding vcov method (e.g. glm, coxph, survreg, etc.) from fitting to the (weighted) stacked dataset
 #' @param stack data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack. (3) stack$.imp, which indicates the multiply imputed dataset (from 1 to M). This column can be easily output from MICE.
 #' @param M number of multiple imputations
+#' @param n_boot number of bootstrap samples
 #'
 #' @return Variance, estimated covariance matrix accounting for within and between imputation variation
 #' @details This function implements the bootstrap-based estimation method for stacked multiple imputations proposed by Dr. Paul Bernhardt in ``A Comparison of Stacked and Pooled Multiple Imputation" at the Joint Statistical Meetings, 2019.
