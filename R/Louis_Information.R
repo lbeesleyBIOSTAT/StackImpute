@@ -6,6 +6,7 @@
 #' @param fit object of class glm or coxph from fitting to the (weighted) stacked dataset
 #' @param stack data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack.
 #' @param M number of multiple imputations
+#' @param IMPUTED deprecated parameter, not used in current version
 #'
 #' @return Info, estimated information matrix accounting for within and between imputation variation
 #' @details  This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data as proposed in Beesley and Taylor (2019) https://arxiv.org/abs/1910.04625.
@@ -35,9 +36,11 @@ Louis_Information = function(fit, stack, M, IMPUTED=NULL){
   if('coxph' %in% class(fit) ){
     SCORE = residuals(fit, type = "score")
   }
+
+
   MEANS = aggregate(sweep(SCORE, MARGIN = 1, stack$wt, '*')~stack$.id,FUN = sum)
   names(MEANS)[1] = c('.id')
-  MEANS_LONG = merge(data.frame(.id = stack$.id, ROWKEY = c(1:length(stack$.id))) , MEANS, by = '.id', all.x = TRUE) #need to check that this does not reorder rows
+  MEANS_LONG = merge(data.frame(.id = stack$.id, ROWKEY = c(1:length(stack$.id))) , MEANS, by = '.id', all.x = TRUE)
   MEANS_LONG = MEANS_LONG[order(MEANS_LONG$ROWKEY),]
   SCORE = SCORE - subset(MEANS_LONG, select = -c(.id, ROWKEY))
   SS_mis = t(as.matrix(sweep(SCORE, MARGIN = 1, stack$wt, '*'))) %*% as.matrix(SCORE)
@@ -49,7 +52,6 @@ Louis_Information = function(fit, stack, M, IMPUTED=NULL){
   Info = J - SS_mis
   return(Info)
 }
-
 
 
 #' Louis_Information_Custom
