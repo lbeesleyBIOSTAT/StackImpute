@@ -84,7 +84,7 @@ knitr::opts_chunk$set(
 
 ## ---- echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4----------------
 #  ### Simulate Data
-#  prob_obs = exp(0.5*B + 0.5*Y)/(1+exp(0.5*B + 0.5*Y))
+#  prob_obs = exp(2*B + 1*Y)/(1+exp(2*B + 1*Y))
 #  S_mnar = as.numeric(prob_obs > runif(Nobs,0,1))
 #  complete_cases = data.frame(Y, X, B, S=S_mnar)[S_mnar == 1,] #complete case subjects only
 #  observed_data_mnar = data.frame(Y, X, B, S=S_mnar) #data with missingness in B
@@ -98,11 +98,11 @@ knitr::opts_chunk$set(
 #  pred["B","Y"] = 1
 #  imputes_mnar = mice::mice(observed_data_mnar, m=50, predictorMatrix=pred, method="norm", printFlag=F)
 #  
-#  ### Step 2: Stack imputed datasetss	
+#  ### Step 2: Stack imputed datasets
 #  stack = mice::complete(imputes_mnar, action="long", include = FALSE)
 #  
 #  ### Step 3: Obtain weights
-#  phi1_assumed = 0.5
+#  phi1_assumed = 2
 #  stack$wt = exp(-phi1_assumed*stack$B)
 #  stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
 #  
@@ -110,4 +110,32 @@ knitr::opts_chunk$set(
 #  fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
 #  
 #  ### Any one of the above variance estimation strategies can then be applied.
+
+## ---- echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4----------------
+#  ### Imputation Function (modified version of mice::mice.impute.mnar.norm())
+#  mice.impute.mnar.norm2 = function (y, ry, x, wy = NULL, ums = NULL, umx = NULL, ...){
+#    u <- mice:::parse.ums(x, ums = ums, umx = umx, ...)
+#    if (is.null(wy))
+#      wy <- !ry
+#    x <- cbind(1, as.matrix(x))
+#    parm <- mice:::.norm.draw(y, ry, x, ...)
+#    return(x[wy, ] %*% parm$beta + as.matrix(u$x[wy, ]) %*% as.matrix(u$delta) + rnorm(sum(wy)) *parm$sigma)
+#  }
+#  
+#  ### *Ideal* pattern mixture model offset parameter for these simulated data:
+#  delta1_assumed = -0.087
+#  
+#  ### Step 1: Impute B|X,Y,S
+#  mnar.blot <- list(B = list(ums =paste0('-',abs(delta1_assumed))))
+#  imputes_pmm = mice::mice(observed_data_mnar, m=50, method="mnar.norm2", printFlag=F, maxit = 1, blots = mnar.blot)
+#  pred = imputes_pmm$predictorMatrix
+#  pred[pred != 0] = 0
+#  pred["B","X"] = 1
+#  pred["B","Y"] = 1
+#  imputes_pmm = mice::mice(observed_data_mnar, m=50, predictorMatrix=pred, method="mnar.norm2", printFlag=F, blots = mnar.blot)
+#  
+#  ### Step 2: Apply Rubin's Rules to obtain point estimates and standard errors
+#  fit = summary(pool(with(imputes_pmm,glm(Y ~ X + B, family=gaussian()))))
+#  param = fit$estimate
+#  VARIANCE = (fit$std.error)^2
 

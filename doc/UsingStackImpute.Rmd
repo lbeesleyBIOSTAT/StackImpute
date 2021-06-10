@@ -133,7 +133,7 @@ In Beesley and Taylor (2021) on *arXiv*, we propose another modification to this
 
 ```{r, echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4}
 ### Simulate Data
-prob_obs = exp(0.5*B + 0.5*Y)/(1+exp(0.5*B + 0.5*Y))
+prob_obs = exp(2*B + 1*Y)/(1+exp(2*B + 1*Y))
 S_mnar = as.numeric(prob_obs > runif(Nobs,0,1))
 complete_cases = data.frame(Y, X, B, S=S_mnar)[S_mnar == 1,] #complete case subjects only
 observed_data_mnar = data.frame(Y, X, B, S=S_mnar) #data with missingness in B
@@ -147,11 +147,11 @@ pred["B","X"] = 1
 pred["B","Y"] = 1
 imputes_mnar = mice::mice(observed_data_mnar, m=50, predictorMatrix=pred, method="norm", printFlag=F)
 
-### Step 2: Stack imputed datasetss	
+### Step 2: Stack imputed datasets
 stack = mice::complete(imputes_mnar, action="long", include = FALSE)
 
 ### Step 3: Obtain weights
-phi1_assumed = 0.5 
+phi1_assumed = 2
 stack$wt = exp(-phi1_assumed*stack$B)
 stack = as.data.frame(stack %>% group_by(.id) %>% mutate(wt = wt / sum(wt)))
 
@@ -161,4 +161,58 @@ fit = glm(Y ~X + B, data=stack, family=gaussian(), weights = stack$wt)
 ### Any one of the above variance estimation strategies can then be applied.
 ```
 
+
+## Example analysis addressing not-at-random missingness using the method of Tompsett et al. (2018)
+
+In Tompsett et al. (2018) in *Statistics in Medicine*, researchers explore an alternative strategy for addressing not-at-random missingness. These researchers handle MNAR missingness by positing a pattern mixture model structure for the imputation models, where the adjusted association between a covariate's value and its own missingness is treated as a fixed sensitivity analysis-type parameter. 
+
+<!-- results = c() -->
+<!-- resultsTomp = c() -->
+<!-- theta = c() -->
+<!-- for(i in c(1:100)){ -->
+<!-- S_mnar = as.numeric(prob_obs > runif(Nobs,0,1)) -->
+<!-- fit = glm(S_mnar~X+B+Y, family = 'binomial') -->
+<!-- fitTomp = glm(B~X+Y+as.numeric(1-S_mnar), family = 'gaussian') -->
+<!-- fitTheta = glm(Y~X+B, family = 'gaussian') -->
+<!-- results = rbind(results, as.numeric(coef(fit))) -->
+<!-- resultsTomp = rbind(resultsTomp, as.numeric(coef(fitTomp))) -->
+<!-- theta = rbind(theta, as.numeric(coef(fitTheta))) -->
+
+<!-- } -->
+<!-- apply(results[,2:4],2,mean) -->
+<!-- apply(resultsTomp[,2:4],2,mean) -->
+<!-- apply(theta[,2:3],2,mean) -->
+
+
+<!-- plot(B[S_mnar == 1]) -->
+<!-- points(B[S_mnar == 0], col = 'red') -->
+
+```{r, echo = TRUE, eval = FALSE,  fig.width = 7, fig.height= 4}
+### Imputation Function (modified version of mice::mice.impute.mnar.norm())
+mice.impute.mnar.norm2 = function (y, ry, x, wy = NULL, ums = NULL, umx = NULL, ...){
+  u <- mice:::parse.ums(x, ums = ums, umx = umx, ...)
+  if (is.null(wy))
+    wy <- !ry
+  x <- cbind(1, as.matrix(x))
+  parm <- mice:::.norm.draw(y, ry, x, ...)
+  return(x[wy, ] %*% parm$beta + as.matrix(u$x[wy, ]) %*% as.matrix(u$delta) + rnorm(sum(wy)) *parm$sigma)
+}
+
+### *Ideal* pattern mixture model offset parameter for these simulated data:
+delta1_assumed = -0.087
+
+### Step 1: Impute B|X,Y,S
+mnar.blot <- list(B = list(ums =paste0('-',abs(delta1_assumed)))) 
+imputes_pmm = mice::mice(observed_data_mnar, m=50, method="mnar.norm2", printFlag=F, maxit = 1, blots = mnar.blot)
+pred = imputes_pmm$predictorMatrix 
+pred[pred != 0] = 0
+pred["B","X"] = 1
+pred["B","Y"] = 1
+imputes_pmm = mice::mice(observed_data_mnar, m=50, predictorMatrix=pred, method="mnar.norm2", printFlag=F, blots = mnar.blot)
+
+### Step 2: Apply Rubin's Rules to obtain point estimates and standard errors
+fit = summary(pool(with(imputes_pmm,glm(Y ~ X + B, family=gaussian()))))
+param = fit$estimate
+VARIANCE = (fit$std.error)^2
+```
 

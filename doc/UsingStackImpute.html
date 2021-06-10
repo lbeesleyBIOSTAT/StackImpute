@@ -348,7 +348,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">UsingStackImpute</h1>
 <h4 class="author">Created by Dr. Lauren J Beesley. Contact: <a href="mailto:lbeesley@umich.edu" class="email">lbeesley@umich.edu</a></h4>
-<h4 class="date">19 January, 2021</h4>
+<h4 class="date">10 June, 2021</h4>
 
 
 
@@ -447,7 +447,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h2>Example analysis addressing not-at-random missingness through stacked and weighted analysis</h2>
 <p>In Beesley and Taylor (2021) on <em>arXiv</em>, we propose another modification to this data analysis pipeline that accounts for not-at-random missingness through weighted analysis of stacked multiple imputations. Weights are a simple function of the imputed data and assumptions about the missingness mechanism. In the special case where missingness follows a logistic regression, the weights take a very simple form as shown.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co">### Simulate Data</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2">prob_obs =<span class="st"> </span><span class="kw">exp</span>(<span class="fl">0.5</span><span class="op">*</span>B <span class="op">+</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>Y)<span class="op">/</span>(<span class="dv">1</span><span class="op">+</span><span class="kw">exp</span>(<span class="fl">0.5</span><span class="op">*</span>B <span class="op">+</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>Y))</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2">prob_obs =<span class="st"> </span><span class="kw">exp</span>(<span class="dv">2</span><span class="op">*</span>B <span class="op">+</span><span class="st"> </span><span class="dv">1</span><span class="op">*</span>Y)<span class="op">/</span>(<span class="dv">1</span><span class="op">+</span><span class="kw">exp</span>(<span class="dv">2</span><span class="op">*</span>B <span class="op">+</span><span class="st"> </span><span class="dv">1</span><span class="op">*</span>Y))</a>
 <a class="sourceLine" id="cb4-3" data-line-number="3">S_mnar =<span class="st"> </span><span class="kw">as.numeric</span>(prob_obs <span class="op">&gt;</span><span class="st"> </span><span class="kw">runif</span>(Nobs,<span class="dv">0</span>,<span class="dv">1</span>))</a>
 <a class="sourceLine" id="cb4-4" data-line-number="4">complete_cases =<span class="st"> </span><span class="kw">data.frame</span>(Y, X, B, <span class="dt">S=</span>S_mnar)[S_mnar <span class="op">==</span><span class="st"> </span><span class="dv">1</span>,] <span class="co">#complete case subjects only</span></a>
 <a class="sourceLine" id="cb4-5" data-line-number="5">observed_data_mnar =<span class="st"> </span><span class="kw">data.frame</span>(Y, X, B, <span class="dt">S=</span>S_mnar) <span class="co">#data with missingness in B</span></a>
@@ -461,11 +461,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb4-13" data-line-number="13">pred[<span class="st">&quot;B&quot;</span>,<span class="st">&quot;Y&quot;</span>] =<span class="st"> </span><span class="dv">1</span></a>
 <a class="sourceLine" id="cb4-14" data-line-number="14">imputes_mnar =<span class="st"> </span>mice<span class="op">::</span><span class="kw">mice</span>(observed_data_mnar, <span class="dt">m=</span><span class="dv">50</span>, <span class="dt">predictorMatrix=</span>pred, <span class="dt">method=</span><span class="st">&quot;norm&quot;</span>, <span class="dt">printFlag=</span>F)</a>
 <a class="sourceLine" id="cb4-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="co">### Step 2: Stack imputed datasetss </span></a>
+<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="co">### Step 2: Stack imputed datasets</span></a>
 <a class="sourceLine" id="cb4-17" data-line-number="17">stack =<span class="st"> </span>mice<span class="op">::</span><span class="kw">complete</span>(imputes_mnar, <span class="dt">action=</span><span class="st">&quot;long&quot;</span>, <span class="dt">include =</span> <span class="ot">FALSE</span>)</a>
 <a class="sourceLine" id="cb4-18" data-line-number="18"></a>
 <a class="sourceLine" id="cb4-19" data-line-number="19"><span class="co">### Step 3: Obtain weights</span></a>
-<a class="sourceLine" id="cb4-20" data-line-number="20">phi1_assumed =<span class="st"> </span><span class="fl">0.5</span> </a>
+<a class="sourceLine" id="cb4-20" data-line-number="20">phi1_assumed =<span class="st"> </span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb4-21" data-line-number="21">stack<span class="op">$</span>wt =<span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>phi1_assumed<span class="op">*</span>stack<span class="op">$</span>B)</a>
 <a class="sourceLine" id="cb4-22" data-line-number="22">stack =<span class="st"> </span><span class="kw">as.data.frame</span>(stack <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(.id) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">wt =</span> wt <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(wt)))</a>
 <a class="sourceLine" id="cb4-23" data-line-number="23"></a>
@@ -473,6 +473,53 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb4-25" data-line-number="25">fit =<span class="st"> </span><span class="kw">glm</span>(Y <span class="op">~</span>X <span class="op">+</span><span class="st"> </span>B, <span class="dt">data=</span>stack, <span class="dt">family=</span><span class="kw">gaussian</span>(), <span class="dt">weights =</span> stack<span class="op">$</span>wt)</a>
 <a class="sourceLine" id="cb4-26" data-line-number="26"></a>
 <a class="sourceLine" id="cb4-27" data-line-number="27"><span class="co">### Any one of the above variance estimation strategies can then be applied.</span></a></code></pre></div>
+</div>
+<div id="example-analysis-addressing-not-at-random-missingness-using-the-method-of-tompsett-et-al.-2018" class="section level2">
+<h2>Example analysis addressing not-at-random missingness using the method of Tompsett et al. (2018)</h2>
+<p>In Tompsett et al. (2018) in <em>Statistics in Medicine</em>, researchers explore an alternative strategy for addressing not-at-random missingness. These researchers handle MNAR missingness by positing a pattern mixture model structure for the imputation models, where the adjusted association between a covariate’s value and its own missingness is treated as a fixed sensitivity analysis-type parameter.</p>
+<!-- results = c() -->
+<!-- resultsTomp = c() -->
+<!-- theta = c() -->
+<!-- for(i in c(1:100)){ -->
+<!-- S_mnar = as.numeric(prob_obs > runif(Nobs,0,1)) -->
+<!-- fit = glm(S_mnar~X+B+Y, family = 'binomial') -->
+<!-- fitTomp = glm(B~X+Y+as.numeric(1-S_mnar), family = 'gaussian') -->
+<!-- fitTheta = glm(Y~X+B, family = 'gaussian') -->
+<!-- results = rbind(results, as.numeric(coef(fit))) -->
+<!-- resultsTomp = rbind(resultsTomp, as.numeric(coef(fitTomp))) -->
+<!-- theta = rbind(theta, as.numeric(coef(fitTheta))) -->
+<!-- } -->
+<!-- apply(results[,2:4],2,mean) -->
+<!-- apply(resultsTomp[,2:4],2,mean) -->
+<!-- apply(theta[,2:3],2,mean) -->
+<!-- plot(B[S_mnar == 1]) -->
+<!-- points(B[S_mnar == 0], col = 'red') -->
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="co">### Imputation Function (modified version of mice::mice.impute.mnar.norm())</span></a>
+<a class="sourceLine" id="cb5-2" data-line-number="2">mice.impute.mnar.norm2 =<span class="st"> </span><span class="cf">function</span> (y, ry, x, <span class="dt">wy =</span> <span class="ot">NULL</span>, <span class="dt">ums =</span> <span class="ot">NULL</span>, <span class="dt">umx =</span> <span class="ot">NULL</span>, ...){</a>
+<a class="sourceLine" id="cb5-3" data-line-number="3">  u &lt;-<span class="st"> </span>mice<span class="op">:::</span><span class="kw">parse.ums</span>(x, <span class="dt">ums =</span> ums, <span class="dt">umx =</span> umx, ...)</a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">  <span class="cf">if</span> (<span class="kw">is.null</span>(wy))</a>
+<a class="sourceLine" id="cb5-5" data-line-number="5">    wy &lt;-<span class="st"> </span><span class="op">!</span>ry</a>
+<a class="sourceLine" id="cb5-6" data-line-number="6">  x &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dv">1</span>, <span class="kw">as.matrix</span>(x))</a>
+<a class="sourceLine" id="cb5-7" data-line-number="7">  parm &lt;-<span class="st"> </span>mice<span class="op">:::</span><span class="kw">.norm.draw</span>(y, ry, x, ...)</a>
+<a class="sourceLine" id="cb5-8" data-line-number="8">  <span class="kw">return</span>(x[wy, ] <span class="op">%*%</span><span class="st"> </span>parm<span class="op">$</span>beta <span class="op">+</span><span class="st"> </span><span class="kw">as.matrix</span>(u<span class="op">$</span>x[wy, ]) <span class="op">%*%</span><span class="st"> </span><span class="kw">as.matrix</span>(u<span class="op">$</span>delta) <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">sum</span>(wy)) <span class="op">*</span>parm<span class="op">$</span>sigma)</a>
+<a class="sourceLine" id="cb5-9" data-line-number="9">}</a>
+<a class="sourceLine" id="cb5-10" data-line-number="10"></a>
+<a class="sourceLine" id="cb5-11" data-line-number="11"><span class="co">### *Ideal* pattern mixture model offset parameter for these simulated data:</span></a>
+<a class="sourceLine" id="cb5-12" data-line-number="12">delta1_assumed =<span class="st"> </span><span class="fl">-0.087</span></a>
+<a class="sourceLine" id="cb5-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb5-14" data-line-number="14"><span class="co">### Step 1: Impute B|X,Y,S</span></a>
+<a class="sourceLine" id="cb5-15" data-line-number="15">mnar.blot &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">B =</span> <span class="kw">list</span>(<span class="dt">ums =</span><span class="kw">paste0</span>(<span class="st">'-'</span>,<span class="kw">abs</span>(delta1_assumed)))) </a>
+<a class="sourceLine" id="cb5-16" data-line-number="16">imputes_pmm =<span class="st"> </span>mice<span class="op">::</span><span class="kw">mice</span>(observed_data_mnar, <span class="dt">m=</span><span class="dv">50</span>, <span class="dt">method=</span><span class="st">&quot;mnar.norm2&quot;</span>, <span class="dt">printFlag=</span>F, <span class="dt">maxit =</span> <span class="dv">1</span>, <span class="dt">blots =</span> mnar.blot)</a>
+<a class="sourceLine" id="cb5-17" data-line-number="17">pred =<span class="st"> </span>imputes_pmm<span class="op">$</span>predictorMatrix </a>
+<a class="sourceLine" id="cb5-18" data-line-number="18">pred[pred <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>] =<span class="st"> </span><span class="dv">0</span></a>
+<a class="sourceLine" id="cb5-19" data-line-number="19">pred[<span class="st">&quot;B&quot;</span>,<span class="st">&quot;X&quot;</span>] =<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb5-20" data-line-number="20">pred[<span class="st">&quot;B&quot;</span>,<span class="st">&quot;Y&quot;</span>] =<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb5-21" data-line-number="21">imputes_pmm =<span class="st"> </span>mice<span class="op">::</span><span class="kw">mice</span>(observed_data_mnar, <span class="dt">m=</span><span class="dv">50</span>, <span class="dt">predictorMatrix=</span>pred, <span class="dt">method=</span><span class="st">&quot;mnar.norm2&quot;</span>, <span class="dt">printFlag=</span>F, <span class="dt">blots =</span> mnar.blot)</a>
+<a class="sourceLine" id="cb5-22" data-line-number="22"></a>
+<a class="sourceLine" id="cb5-23" data-line-number="23"><span class="co">### Step 2: Apply Rubin's Rules to obtain point estimates and standard errors</span></a>
+<a class="sourceLine" id="cb5-24" data-line-number="24">fit =<span class="st"> </span><span class="kw">summary</span>(<span class="kw">pool</span>(<span class="kw">with</span>(imputes_pmm,<span class="kw">glm</span>(Y <span class="op">~</span><span class="st"> </span>X <span class="op">+</span><span class="st"> </span>B, <span class="dt">family=</span><span class="kw">gaussian</span>()))))</a>
+<a class="sourceLine" id="cb5-25" data-line-number="25">param =<span class="st"> </span>fit<span class="op">$</span>estimate</a>
+<a class="sourceLine" id="cb5-26" data-line-number="26">VARIANCE =<span class="st"> </span>(fit<span class="op">$</span>std.error)<span class="op">^</span><span class="dv">2</span></a></code></pre></div>
 </div>
 
 
