@@ -211,7 +211,7 @@ pred["B","Y"] = 1
 imputes_pmm = mice::mice(observed_data_mnar, m=50, predictorMatrix=pred, method="mnar.norm2", printFlag=F, blots = mnar.blot)
 
 ### Step 2: Apply Rubin's Rules to obtain point estimates and standard errors
-fit = summary(pool(with(imputes_pmm,glm(Y ~ X + B, family=gaussian()))))
+fit = summary(mice::pool(with(imputes_pmm,glm(Y ~ X + B, family=gaussian()))))
 param = fit$estimate
 VARIANCE = (fit$std.error)^2
 ```
