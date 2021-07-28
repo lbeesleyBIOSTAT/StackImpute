@@ -88,6 +88,13 @@ Louis_Information_Custom = function(score, covariance_weighted,stack, M){
 }
 
 
+
+#' Title
+#'
+#' Description
+#'
+#' @param fit desc
+#'
 #' @export
 
 glm.weighted.dispersion = function(fit){

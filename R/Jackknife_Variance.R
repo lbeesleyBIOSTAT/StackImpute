@@ -34,11 +34,19 @@ Jackknife_Variance = function(fit, stack, M){
 
 
 
+
+#' Title
+#'
+#' Description
+#'
+#' @param leaveout desc
+#' @param stack desc
+#'
 #' @export
 
 func.jack <- function(leaveout, stack){
   stack_temp = stack[stack$.imp != leaveout, ]
-  stack_temp <- stack_temp %>% group_by(.id) %>% mutate(wt = wt / sum(wt))
+  stack_temp <- stack_temp %>% dplyr::group_by(.id) %>% dplyr::mutate(wt = wt / sum(wt))
   stack_temp <- as.data.frame(stack_temp)
   fit_jack <- StackImpute::my_update(fit, . ~ ., data = stack_temp, weights = stack_temp$wt)
   param = coef(fit_jack)

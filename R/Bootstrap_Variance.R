@@ -31,7 +31,13 @@ Bootstrap_Variance = function(fit, stack, M, n_boot = 100){
   return(Variance)
 }
 
-
+#' Title
+#'
+#' Description
+#'
+#' @param data desc
+#' @param indices desc
+#'
 #' @export
 
 func.boot <- function(data, indices){
@@ -39,13 +45,22 @@ func.boot <- function(data, indices){
   stack_temp = merge(stack_temp, data.frame(.imp = sort(unique(indices)), multiples = as.numeric(table(indices)
 )), by = '.imp', all.x = TRUE)
   stack_temp$wt =  stack_temp$wt*stack_temp$multiples
-  stack_temp <- stack_temp %>% group_by(.id) %>% mutate(wt = wt / sum(wt))
+  stack_temp <- stack_temp %>% dplyr::group_by(.id) %>% dplyr::mutate(wt = wt / sum(wt))
   stack_temp <- as.data.frame(stack_temp)
   fit_boot <- StackImpute::my_update(fit, . ~ ., data = stack_temp, weights = stack_temp$wt)
   param = coef(fit_boot)
   return(param)
 }
 
+
+#' Title
+#'
+#' Description
+#'
+#' @param mod desc
+#' @param formula desc
+#' @param data desc
+#' @param weights desc
 #' @export
 
 my_update <- function(mod, formula = NULL, data = NULL, weights = NULL) {
