@@ -24,3 +24,9 @@ This function takes a dataset with stacked multiple imputations and a glm or cox
 \details{
 This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data as proposed in Beesley and Taylor (2019) https://arxiv.org/abs/1910.04625.
 }
+\examples{
+data(stackExample)
+Info = Louis_Information(stackExample$fit, stackExample$stack, M = 50)
+VARIANCE = diag(solve(Info))
+
+}

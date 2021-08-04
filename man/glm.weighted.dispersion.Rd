@@ -2,13 +2,21 @@
 % Please edit documentation in R/Louis_Information.R
 \name{glm.weighted.dispersion}
 \alias{glm.weighted.dispersion}
-\title{Title}
+\title{glm.weighted.dispersion}
 \usage{
 glm.weighted.dispersion(fit)
 }
 \arguments{
-\item{fit}{desc}
+\item{fit}{an object of class glm}
+}
+\value{
+an estimate of the glm dispersion parameter
 }
 \description{
-Description
+The goal of this function is to estimate the glm dispersion parameter using data across imputed datasets while correctly accounting for the weights.
+}
+\examples{
+data(stackExample)
+glm.weighted.dispersion(stackExample$fit)
+
 }

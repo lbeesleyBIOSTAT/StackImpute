@@ -11,6 +11,16 @@
 #'
 #' @return Variance, estimated covariance matrix accounting for within and between imputation variation
 #' @details This function implements the bootstrap-based estimation method for stacked multiple imputations proposed by Dr. Paul Bernhardt in ``A Comparison of Stacked and Pooled Multiple Imputation" at the Joint Statistical Meetings, 2019.
+#'
+#' @examples
+#' data(stackExample)
+#'
+#' fit = stackExample$fit
+#' stack = stackExample$stack
+#'
+#' bootcovar = Bootstrap_Variance(fit, stack, M = 50, n_boot = 100)
+#' VARIANCE_boot = diag(bootcovar)
+#'
 #' @export
 
 
@@ -36,7 +46,7 @@ Bootstrap_Variance = function(fit, stack, M, n_boot = 100){
 #' @description This function is called internal to Bootstrap_Variance and re-estimates glm model parameters
 #'
 #' @param data matrix with indices of possible imputed datasets to sample
-#' @param indices sampled indices 
+#' @param indices sampled indices
 #'
 #' @export
 
@@ -61,6 +71,7 @@ func.boot <- function(data, indices){
 #' @param formula formula for updated model fit, default = no change
 #' @param data data used for updated model fit, default = no change
 #' @param weights weights used for updated model fit, default = no change
+#'
 #' @export
 
 my_update <- function(mod, formula = NULL, data = NULL, weights = NULL) {

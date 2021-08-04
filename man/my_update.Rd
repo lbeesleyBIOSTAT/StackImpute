@@ -2,19 +2,19 @@
 % Please edit documentation in R/Bootstrap_Variance.R
 \name{my_update}
 \alias{my_update}
-\title{Title}
+\title{my_update}
 \usage{
 my_update(mod, formula = NULL, data = NULL, weights = NULL)
 }
 \arguments{
-\item{mod}{desc}
+\item{mod}{object of class 'glm' or 'coxph'}
 
-\item{formula}{desc}
+\item{formula}{formula for updated model fit, default = no change}
 
-\item{data}{desc}
+\item{data}{data used for updated model fit, default = no change}
 
-\item{weights}{desc}
+\item{weights}{weights used for updated model fit, default = no change}
 }
 \description{
-Description
+Function for updating a model fit using either new data or a new model structure
 }

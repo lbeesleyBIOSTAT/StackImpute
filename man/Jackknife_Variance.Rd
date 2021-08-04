@@ -22,3 +22,13 @@ This function takes a dataset with stacked multiple imputation and a model fit a
 \details{
 This function implements the jackknife-based estimation method for stacked multiple imputations proposed by Beesley and Taylor (2021).
 }
+\examples{
+data(stackImpute)
+
+fit = stackImpute$fit
+stack = stackImpute$stack
+
+jackcovar = Jackknife_Variance(fit, stack, M = 50)
+VARIANCE_jack = diag(jackcovar)
+
+}

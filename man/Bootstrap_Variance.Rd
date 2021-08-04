@@ -24,3 +24,13 @@ This function takes a dataset with stacked multiple imputation and a model fit a
 \details{
 This function implements the bootstrap-based estimation method for stacked multiple imputations proposed by Dr. Paul Bernhardt in ``A Comparison of Stacked and Pooled Multiple Imputation" at the Joint Statistical Meetings, 2019.
 }
+\examples{
+data(stackExample)
+
+fit = stackExample$fit
+stack = stackExample$stack
+
+bootcovar = Bootstrap_Variance(fit, stack, M = 50, n_boot = 100)
+VARIANCE_boot = diag(bootcovar)
+
+}

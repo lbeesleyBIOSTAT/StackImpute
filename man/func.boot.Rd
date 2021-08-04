@@ -2,15 +2,15 @@
 % Please edit documentation in R/Bootstrap_Variance.R
 \name{func.boot}
 \alias{func.boot}
-\title{Title}
+\title{func.boot}
 \usage{
 func.boot(data, indices)
 }
 \arguments{
-\item{data}{desc}
+\item{data}{matrix with indices of possible imputed datasets to sample}
 
-\item{indices}{desc}
+\item{indices}{sampled indices}
 }
 \description{
-Description
+This function is called internal to Bootstrap_Variance and re-estimates glm model parameters
 }

@@ -11,6 +11,11 @@
 #' @return Info, estimated information matrix accounting for within and between imputation variation
 #' @details  This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data as proposed in Beesley and Taylor (2019) https://arxiv.org/abs/1910.04625.
 #'
+#' @examples
+#' data(stackExample)
+#' Info = Louis_Information(stackExample$fit, stackExample$stack, M = 50)
+#' VARIANCE = diag(solve(Info))
+#'
 #' @export
 
 
@@ -65,6 +70,19 @@ Louis_Information = function(fit, stack, M, IMPUTED=NULL){
 #' @return Info, estimated information matrix accounting for within and between imputation variation
 #' @details This function uses the observed information matrix principle proposed in Louis (1982) and applied to imputations in Wei and Tanner (1990). This estimator is a further extension specifically designed for analyzing stacks of multiply imputed data as proposed in Beesley and Taylor (2019) https://arxiv.org/abs/1910.04625.
 #'
+#' @examples
+#' data(stackExample)
+#'
+#' fit = stackExample$fit
+#' stack = stackExample$stack
+#'
+#' covariates = as.matrix(cbind(1, stack$X, stack$B))
+#' score = sweep(covariates, 1, stack$Y - covariates %*%
+#'          matrix(coef(fit)), '*') / glm.weighted.dispersion(fit)
+#' covariance_weighted = summary(fit)$cov.unscaled * glm.weighted.dispersion(fit)
+#' Info = Louis_Information_Custom(score, covariance_weighted, stack, M = 50)
+#' VARIANCE_custom = diag(solve(Info))
+#'
 #' @export
 
 
@@ -96,6 +114,10 @@ Louis_Information_Custom = function(score, covariance_weighted,stack, M){
 #' @param fit an object of class glm
 #'
 #' @return an estimate of the glm dispersion parameter
+#'
+#' @examples
+#' data(stackExample)
+#' glm.weighted.dispersion(stackExample$fit)
 #'
 #' @export
 

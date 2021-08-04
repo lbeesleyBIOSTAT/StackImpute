@@ -10,6 +10,16 @@
 #'
 #' @return Variance, estimated covariance matrix accounting for within and between imputation variation
 #' @details This function implements the jackknife-based estimation method for stacked multiple imputations proposed by Beesley and Taylor (2021).
+#'
+#' @examples
+#' data(stackImpute)
+#'
+#' fit = stackImpute$fit
+#' stack = stackImpute$stack
+#'
+#' jackcovar = Jackknife_Variance(fit, stack, M = 50)
+#' VARIANCE_jack = diag(jackcovar)
+#'
 #' @export
 
 
@@ -39,7 +49,7 @@ Jackknife_Variance = function(fit, stack, M){
 #'
 #' @description This function is internal to Jackknife_Variance. This estimates model parameters using a subset of the stacked data.
 #'
-#' @param leaveout indexes the multiple imputation being excluded from estimation 
+#' @param leaveout indexes the multiple imputation being excluded from estimation
 #' @param stack data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack. (3) stack$.imp, which indicates the multiply imputed dataset (from 1 to M). This column can be easily output from MICE.
 #'
 #' @export
