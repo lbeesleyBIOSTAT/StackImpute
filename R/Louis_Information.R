@@ -91,11 +91,13 @@ Louis_Information_Custom = function(score, covariance_weighted,stack, M){
 
 #' glm.weighted.dispersion
 #'
-#' The goal of this function is to estimate the glm dispersion parameter using data across imputed datasets while correctly accounting for the weights.
+#' @description The goal of this function is to estimate the glm dispersion parameter using data across imputed datasets while correctly accounting for the weights.
 #'
 #' @param fit an object of class glm
 #'
-#' @export an estimate of the glm dispersion parameter
+#' @return an estimate of the glm dispersion parameter
+#'
+#' @export
 
 glm.weighted.dispersion = function(fit){
   return( sum(as.vector(residuals(fit, "response"))^2 * weights(fit, "prior"), na.rm = TRUE)/sum(weights(fit, "prior"), na.rm = TRUE))
