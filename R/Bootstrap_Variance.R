@@ -55,12 +55,12 @@ func.boot <- function(data, indices){
 
 #' my_update
 #'
-#' @description Function for updating a glm model fit using either new data or a new model structure
+#' @description Function for updating a model fit using either new data or a new model structure
 #'
-#' @param mod object of class 'glm'
-#' @param formula formula for updated glm model fit, default = no change
-#' @param data data used for updated glm model fit, default = no change
-#' @param weights weights used for updated glm model fit, default = no change
+#' @param mod object of class 'glm' or 'coxph'
+#' @param formula formula for updated model fit, default = no change
+#' @param data data used for updated model fit, default = no change
+#' @param weights weights used for updated model fit, default = no change
 #' @export
 
 my_update <- function(mod, formula = NULL, data = NULL, weights = NULL) {
