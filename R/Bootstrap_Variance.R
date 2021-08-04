@@ -31,12 +31,12 @@ Bootstrap_Variance = function(fit, stack, M, n_boot = 100){
   return(Variance)
 }
 
-#' Title
+#' func.boot
 #'
-#' Description
+#' @description This function is called internal to Bootstrap_Variance and re-estimates glm model parameters
 #'
-#' @param data desc
-#' @param indices desc
+#' @param data matrix with indices of possible imputed datasets to sample
+#' @param indices sampled indices 
 #'
 #' @export
 
@@ -53,14 +53,14 @@ func.boot <- function(data, indices){
 }
 
 
-#' Title
+#' my_update
 #'
-#' Description
+#' @description Function for updating a glm model fit using either new data or a new model structure
 #'
-#' @param mod desc
-#' @param formula desc
-#' @param data desc
-#' @param weights desc
+#' @param mod object of class 'glm'
+#' @param formula formula for updated glm model fit, default = no change
+#' @param data data used for updated glm model fit, default = no change
+#' @param weights weights used for updated glm model fit, default = no change
 #' @export
 
 my_update <- function(mod, formula = NULL, data = NULL, weights = NULL) {
