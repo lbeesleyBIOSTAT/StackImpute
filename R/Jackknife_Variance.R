@@ -17,7 +17,7 @@
 #' fit = stackExample$fit
 #' stack = stackExample$stack
 #'
-#' jackcovar = Jackknife_Variance(fit, stack, M = 50)
+#' jackcovar = Jackknife_Variance(fit, stack, M = 5)
 #' VARIANCE_jack = diag(jackcovar)
 #'
 #' @export

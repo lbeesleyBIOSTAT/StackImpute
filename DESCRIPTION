@@ -1,9 +1,9 @@
 Package: StackImpute
-Title: Tools for analysis of stacked multiple imputations
+Title: Tools for Analysis of Stacked Multiple Imputations
 Version: 0.1.0
 Authors@R: c(person("Lauren", "Beesley", email = "lbeesley@umich.edu", role = c("aut")),
              person("Mike", "Kleinsasser", email = "mkleinsa@umich.edu", role = c("cre")))
-Description: This package provides methods for inference using stacked multiple 
+Description: Provides methods for inference using stacked multiple 
     imputations augmented with weights. The vignette provides example R code for 
     implementation in general multiple imputation settings. 
 Depends: R (>= 3.6.0)

@@ -18,7 +18,7 @@
 #' fit = stackExample$fit
 #' stack = stackExample$stack
 #'
-#' bootcovar = Bootstrap_Variance(fit, stack, M = 50, n_boot = 100)
+#' bootcovar = Bootstrap_Variance(fit, stack, M = 5, n_boot = 10)
 #' VARIANCE_boot = diag(bootcovar)
 #'
 #' @export
