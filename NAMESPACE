@@ -11,6 +11,5 @@ importFrom(boot, boot)
 importFrom("stats", "aggregate", "coef", "getCall", "model.matrix",
            "residuals", "terms", "update.formula", "var", "vcov",
            "weights")
-importFrom("utils", "stack")
 importFrom(magrittr, "%>%")
 export("%>%")
