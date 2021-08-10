@@ -1,2 +1,2 @@
 
-globalVariables(c("ROWKEY", "fit", ".id", "wt"))
+globalVariables(c("ROWKEY", "fit", ".id", "wt", "stack"))
