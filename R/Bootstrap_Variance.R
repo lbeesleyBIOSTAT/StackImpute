@@ -48,6 +48,8 @@ Bootstrap_Variance = function(fit, stack, M, n_boot = 100){
 #' @param data matrix with indices of possible imputed datasets to sample
 #' @param indices sampled indices
 #'
+#' @return numeric vector of parameter coefficients
+#'
 #' @export
 
 func.boot <- function(data, indices){
@@ -71,6 +73,8 @@ func.boot <- function(data, indices){
 #' @param formula formula for updated model fit, default = no change
 #' @param data data used for updated model fit, default = no change
 #' @param weights weights used for updated model fit, default = no change
+#'
+#' @return the updated model fit object of the same class as the given model
 #'
 #' @export
 

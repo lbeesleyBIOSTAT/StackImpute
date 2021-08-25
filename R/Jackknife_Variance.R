@@ -52,6 +52,8 @@ Jackknife_Variance = function(fit, stack, M){
 #' @param leaveout indexes the multiple imputation being excluded from estimation
 #' @param stack data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack. (3) stack$.imp, which indicates the multiply imputed dataset (from 1 to M). This column can be easily output from MICE.
 #'
+#' @return numeric vector of parameter coefficients
+#'
 #' @export
 
 func.jack <- function(leaveout, stack){

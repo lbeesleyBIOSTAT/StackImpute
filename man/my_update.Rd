@@ -15,6 +15,9 @@ my_update(mod, formula = NULL, data = NULL, weights = NULL)
 
 \item{weights}{weights used for updated model fit, default = no change}
 }
+\value{
+the updated model fit object of the same class as the given model
+}
 \description{
 Function for updating a model fit using either new data or a new model structure
 }

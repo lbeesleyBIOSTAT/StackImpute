@@ -11,6 +11,9 @@ func.boot(data, indices)
 
 \item{indices}{sampled indices}
 }
+\value{
+numeric vector of parameter coefficients
+}
 \description{
 This function is called internal to Bootstrap_Variance and re-estimates glm model parameters
 }

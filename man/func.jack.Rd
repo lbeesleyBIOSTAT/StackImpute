@@ -11,6 +11,9 @@ func.jack(leaveout, stack)
 
 \item{stack}{data frame containing stacked dataset across multiple imputations. Could have 1 or M rows for each subject with complete data. Should have M rows for each subject with imputed data. Must contain the following named columns: (1) stack$.id, which correspond to a unique identifier for each subject. This column can be easily output from MICE. (2) stack$wt, which corresponds to weights assigned to each row. Standard analysis of stacked multiple imputations should set these weights to 1 over the number of times the subject appears in the stack. (3) stack$.imp, which indicates the multiply imputed dataset (from 1 to M). This column can be easily output from MICE.}
 }
+\value{
+numeric vector of parameter coefficients
+}
 \description{
 This function is internal to Jackknife_Variance. This estimates model parameters using a subset of the stacked data.
 }
